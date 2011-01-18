@@ -1,0 +1,5 @@
+name: MCSL
+
+main: com.bukkit.wedtm.mcsl.MCSL
+
+version: 1.0
