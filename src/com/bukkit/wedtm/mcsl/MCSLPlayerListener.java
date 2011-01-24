@@ -55,7 +55,7 @@ public class MCSLPlayerListener extends PlayerListener {
     	String pName = event.getPlayer().getName();
     	System.out.println("[mcsl] " + pName + " logged out.");
     	Players.remove(event.getPlayer());
-    	
+    	Update();
     }
     
    
