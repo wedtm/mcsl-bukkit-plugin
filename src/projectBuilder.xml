@@ -1,0 +1,25 @@
+<project name="Example Build Script" basedir=".." default="jar">
+	<path id="example-classpath">
+		<pathelement location="${root-dir}" />
+		<fileset dir="C:\Users\Rigby\Desktop\Git" includes="*.jar" />
+	</path>
+	
+	<target name="jar">
+		<!-- deletes previously created jar -->
+		<delete file="C:\Users\Rigby\Desktop\Git\MCSL.jar" />
+
+		<!-- compile your code and drop .class into "bin" directory -->
+		<javac srcdir="${basedir}" destdir="bin" debug="false" deprecation="off">
+			<classpath refid="example-classpath" />
+		</javac>
+
+		<!-- copy the JARs that you need to "bin" directory  -->
+		<!--<copy todir="bin">
+			<fileset dir="C:\Users\Rigby\Desktop\Git" includes="*.jar" />
+		</copy>-->
+
+		<!-- creates your jar with the contents inside "bin" (now with your .class and .jar dependencies) -->
+		<jar destfile="C:\Users\Rigby\Desktop\Git\Server\plugins\MCSL.jar" basedir="bin" duplicate="preserve">
+		</jar>
+	</target>
+</project>

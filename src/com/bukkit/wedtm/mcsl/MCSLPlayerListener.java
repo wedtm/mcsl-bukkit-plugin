@@ -1,109 +1,91 @@
 package com.bukkit.wedtm.mcsl;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.net.URLConnection;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
-
-
-
-
 /**
  * Handle events for all Player related events
+ * 
  * @author WedTM
  */
 public class MCSLPlayerListener extends PlayerListener {
-    private final MCSL plugin;
-    private ArrayList<Player> Players;
-    private Timer timer = new Timer(true);
-    private String previous = null;
+    private final MCSL        plugin;
+
+    private Player[]          Players;
+
+    private final Logger      log     = Logger.getLogger("Minecraft");
+
+    private final MCSLUpdater updater = new MCSLUpdater();
 
     public MCSLPlayerListener(MCSL instance) {
         plugin = instance;
-        Players = new ArrayList<Player>();
-        int delay = 10;   // delay for 5 sec.
-        int period = 60;  // repeat every sec.
+        // Players = new ArrayList<Player>();
+        int delay = 30; // Delay first run by 10 Seconds
+        int period = 30; // Repeat function every 60 Seconds
         Timer timer = new Timer();
 
         timer.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    Update();
-                }
-            }, delay * 1000, period * 1000);
+            @Override
+            public void run() {
+                UpdatePlayerCount();
+            }
+        }, delay * 1000, period * 1000);
     }
 
+    @Override
     public void onPlayerLogin(PlayerLoginEvent event) {
-    	String pName = event.getPlayer().getName();
-    	System.out.println("[mcsl] " + pName + " logged in.");
-    	Players.add(event.getPlayer());
-    	Update();
+        String pName = event.getPlayer().getName();
+        log.info("[MCSL] " + pName + " logged in.");
+        // if (Players.contains(event.getPlayer()) == false) {
+        // Players.add(event.getPlayer());
+        // }
+        UpdatePlayerCount();
     }
-    
+
+    @Override
     public void onPlayerQuit(PlayerEvent event) {
-    	String pName = event.getPlayer().getName();
-    	System.out.println("[mcsl] " + pName + " logged out.");
-    	for (Player p : Players)
-    	{
-    		if(p.getDisplayName() == event.getPlayer().getDisplayName())
-    		{
-    			Players.remove(p);
-    		}
-    	}
-    	Update();
-    }
-    
-   
-    public void Update() {
-    	try {
-    		String players_data = "";
-    		if (Players.size() == 0)
-    			players_data = "  ";
-    		else
-    		{
-    			for (Player p : Players) {
-    				players_data += p.getDisplayName() + ", ";
-    			}
-    		}
-    		
-    		players_data = players_data.substring(0, players_data.length() - 2);
-        // Construct data
-        String data = URLEncoder.encode("key", "UTF-8") + "=" + URLEncoder.encode(plugin.mcsl_key, "UTF-8");
-        data += "&" + URLEncoder.encode("player_count", "UTF-8") + "=" + URLEncoder.encode(Integer.toString(Players.size()), "UTF-8");
-        data += "&" + URLEncoder.encode("max_players", "UTF-8") + "=" + URLEncoder.encode(plugin.max_players.toString(), "UTF-8");
-        data += "&" + URLEncoder.encode("player_list", "UTF-8") + "=" + URLEncoder.encode(players_data, "UTF-8");
+        String pName = event.getPlayer().getName();
+        log.info("[MCSL] " + pName + " logged out.");
 
-        // Send data
-        URL url = new URL("http://mcserverlist.net/api/update");
-        URLConnection conn = url.openConnection();
-        conn.setDoOutput(true);
-        OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-        wr.write(data);
-        wr.flush();
+        // Players.remove(event.getPlayer());
 
-        // Get the response
-        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        while ((line = rd.readLine()) != null) { }
-        wr.close();
-        rd.close();
-    	}
-    	catch (Exception e) {	}
-    	System.out.println("[MCSL] Updated Server Listing.");
+        UpdatePlayerCount();
     }
 
-    
+    public void UpdatePlayerCount() {
 
+        Players = plugin.getServer().getOnlinePlayers();
+
+        String players_data;
+
+        if (Players.length > 0) {
+            players_data = "";
+            for (Player p : Players) {
+                players_data += p.getDisplayName() + ", ";
+            }
+        }
+        else {
+            players_data = "  ";
+        }
+
+        players_data = players_data.substring(0, players_data.length() - 2);
+
+        try {
+            String data = URLEncoder.encode("key", "UTF-8") + "=" + URLEncoder.encode(plugin.properties.get("mcsl-key"), "UTF-8");
+            data += "&" + URLEncoder.encode("player_count", "UTF-8") + "=" + Integer.toString(Players.length);
+            data += "&" + URLEncoder.encode("player_list", "UTF-8") + "=" + URLEncoder.encode(players_data, "UTF-8");
+            updater.Update(data);
+        }
+        catch (UnsupportedEncodingException e) {
+            // log.info("[MCSL] Error - " + e);
+        }
+    }
 }
-
