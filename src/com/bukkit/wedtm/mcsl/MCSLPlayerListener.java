@@ -26,6 +26,9 @@ public class MCSLPlayerListener extends PlayerListener {
         log.info("[MCSL] " + pName + " logged in.");
         plugin.updater.UpdatePlayerCount();
     }
+    
+    @Override
+    public void on
 
     @Override
     public void onPlayerQuit(PlayerEvent event) {
