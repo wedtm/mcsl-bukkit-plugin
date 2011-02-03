@@ -1,3 +1,5 @@
-name: MCSL
-main: com.bukkit.wedtm.mcsl.MCSL
-version: 1.0
+name: Mcsl
+main: com.bukkit.wedtm.mcsl.Mcsl
+version: 1
+website: http://mcserverlist.net/
+author: 'Vimae Development, LLC'
